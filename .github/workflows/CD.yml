@@ -4,18 +4,20 @@ on:
   push:
     tags:
       - '*'
-
+env:
+  version: ${{ github.ref}}
+  Actions_Allow_Unsecure_Commands: true
+      
 jobs:
   build:
     runs-on: windows-latest
     environment: Development
 
     env:
-      Project_Path: WpfAppDeploy.csproj
+      Project_Path: BlazorEnvironments.csproj
       Zip_Path: Zip
       Publish_Path: publish
       Configuration: Release
-      Actions_Allow_Unsecure_Commands: true
 
     steps:
     - name: Checkout
@@ -35,12 +37,44 @@ jobs:
       run: New-Item -Path ${{ env.Zip_Path }} -ItemType Directory
     
     - name: Zip
-      run: Compress-Archive -Path ${{ env.Publish_Path }}\* -DestinationPath ${{ env.Zip_Path }}\App_${{ github.ref}}.zip
+      run: Compress-Archive -Path ${{ env.Publish_Path }}\* -DestinationPath ${{ env.Zip_Path }}\App_${{ env.version}}.zip
       shell: pwsh
       
     - name: Upload
       uses: actions/upload-artifact@v2.3.1
       with:
         name: App
-        path: ${{ env.Zip_Path }}\App_${{ github.ref}}.zip
+        path: ${{ env.Zip_Path }}\App_${{ env.version}}.zip
+        
+  deploy:
+    runs-on: windows-latest
+    needs: [build]
+    environment: Production
+
+    steps:
+    - name: Download
+      uses: actions/download-artifact@v2.1.0
+      with:
+        name: App
     
+    - name: Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ env.version }}
+        release_name:  ${{ env.version }}
+        draft: false
+        prerelease: false
+        
+    - name: Append Upload
+      id: upload-release-asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: App_${{ env.version }}.zip
+        asset_name: App_${{ env.version }}.zip
+        asset_content_type: application/zip 
