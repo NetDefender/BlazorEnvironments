@@ -3,6 +3,7 @@ name: Test
 on:
   push:
     branches: [master]
+  workflow_dispatch:
     
 jobs:
 
@@ -10,6 +11,6 @@ jobs:
     runs-on: windows-latest
     environment: Development
     steps:
-    - name: 
+    - name: Hello
       run: echo "Hola"
       shell: pwsh
