@@ -1,0 +1,46 @@
+name:  CD-Environments
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    environment: development
+
+    env:
+      Project_Path: WpfAppDeploy.csproj
+      Zip_Path: Zip
+      Publish_Path: publish
+      Configuration: Release
+      Actions_Allow_Unsecure_Commands: true
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0.x'
+
+    - name: Publish
+      run: dotnet publish -c ${{ env.Configuration }} .\${{ env.Project_Path }} -o "${{ env.Publish_Path }}"
+    
+    - name: Create Zip Directory
+      run: New-Item -Path ${{ env.Zip_Path }} -ItemType Directory
+    
+    - name: Zip
+      run: Compress-Archive -Path ${{ env.Publish_Path }}\* -DestinationPath ${{ env.Zip_Path }}\App_${{ github.ref}}.zip
+      shell: pwsh
+      
+    - name: Upload
+      uses: actions/upload-artifact@v2.3.1
+      with:
+        name: App
+        path: ${{ env.Zip_Path }}\App_${{ github.ref}}.zip
+    
