@@ -4,8 +4,10 @@ on:
   push:
     tags:
       - '*'
+  workflow_dispatch:
+  
 env:
-  version: ${{ github.ref}}
+  version: 1.0.0.0 # ${{ github.ref}}
   Actions_Allow_Unsecure_Commands: true
       
 jobs:
