@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
   
 env:
-  version: 1.0.0.0 # ${{ github.ref}}
+  version: ${{ github.ref}} # 1.0.0.0
   Actions_Allow_Unsecure_Commands: true
       
 jobs:
