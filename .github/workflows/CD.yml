@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
   
 env:
-  version: ${{ github.ref}} # 1.0.0.0
+  customversion: ${{ github.ref}} # 1.0.0.0
   Actions_Allow_Unsecure_Commands: true
       
 jobs:
@@ -39,14 +39,14 @@ jobs:
       run: New-Item -Path ${{ env.Zip_Path }} -ItemType Directory
     
     - name: Zip
-      run: Compress-Archive -Path ${{ env.Publish_Path }}\* -DestinationPath ${{ env.Zip_Path }}\App_${{ env.version}}.zip
+      run: Compress-Archive -Path ${{ env.Publish_Path }}\* -DestinationPath ${{ env.Zip_Path }}\App_${{ env.customversion}}.zip
       shell: pwsh
       
     - name: Upload
       uses: actions/upload-artifact@v2.3.1
       with:
         name: App
-        path: ${{ env.Zip_Path }}\App_${{ env.version}}.zip
+        path: ${{ env.Zip_Path }}\App_${{ env.customversion}}.zip
         
   deploy:
     runs-on: windows-latest
@@ -65,8 +65,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ env.version }}
-        release_name:  ${{ env.version }}
+        tag_name: ${{ env.customversion }}
+        release_name:  ${{ env.customversion }}
         draft: false
         prerelease: false
         
@@ -77,6 +77,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: App_${{ env.version }}.zip
-        asset_name: App_${{ env.version }}.zip
+        asset_path: App_${{ env.customversion }}.zip
+        asset_name: App_${{ env.customversion }}.zip
         asset_content_type: application/zip 
